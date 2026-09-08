@@ -2,7 +2,7 @@
 
 import { logout } from "@/app/utils/actions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getWallet } from "@/app/utils/cryptoFunctions"
+import { getWallet, getAccounts } from "@/app/utils/cryptoFunctions"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,13 +82,13 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => getAccounts()}>
                 <CircleUserRoundIcon />
                 Account
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => getWallet(wallet)}>
                 <CreditCardIcon />
-                Billing {getWallet(wallet)}
+                Billing
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <BellIcon />
