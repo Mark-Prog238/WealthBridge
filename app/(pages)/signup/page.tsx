@@ -2,7 +2,7 @@
 
 import { SignupForm } from "@/components/signup-form"
 import { GalleryVerticalEndIcon } from "lucide-react"
-
+import { Config } from "@/app/config"
 export default function SignupPage() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
@@ -11,7 +11,7 @@ export default function SignupPage() {
           <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <GalleryVerticalEndIcon className="size-4" />
           </div>
-          Acme Inc.
+          {Config.APP_NAME}
         </a>
         <SignupForm />
       </div>

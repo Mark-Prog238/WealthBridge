@@ -34,14 +34,28 @@ export function SignupForm({
           <form>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="name">Full Name</FieldLabel>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="John Doe"
-                  required
-                />
+                <Field className="grid grid-cols-2 gap-4">
+                  <Field>
+                    <FieldLabel htmlFor="fname">First Name</FieldLabel>
+                    <Input
+                      id="fname"
+                      name="fname"
+                      type="text"
+                      placeholder="John"
+                      required
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="lname">Last Name</FieldLabel>
+                    <Input
+                      id="lname"
+                      name="lname"
+                      type="text"
+                      placeholder="Doe"
+                      required
+                    />
+                  </Field>
+                </Field>
               </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
