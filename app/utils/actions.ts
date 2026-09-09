@@ -207,7 +207,8 @@ export async function totalCryptoValue() {
           totalWei += BigInt(item.balance)
         }
         const totalEth = Number(totalWei) / 1e18
-        console.log(`total wei is:   ${totalEth}`)
+
+        return totalEth
       } catch (err) {
         console.log(`error:   ${err}`)
       }
