@@ -1,21 +1,12 @@
-# Next.js template
+this is a project app that combines all your finances in one place
 
-This is a Next.js template with shadcn/ui.
+Crypto, IBKR auto refresh
 
-## Adding components
+for ibkr we are using flex queries set up once and forget
 
-To add components to your app, run the following command:
+for crypto wallet address
 
-```bash
-npx shadcn@latest add button
-```
+go to ibkr flex queeries create a query like shown in img below then click on "Configure Flex Web Service" copy the token and insert it into token field click save and close
 
-This will place the ui components in the `components` directory.
-
-## Using components
-
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button";
-```
+next to the query pres the "i" icon and copy queery id and insert into queery field
+and thats it your done
