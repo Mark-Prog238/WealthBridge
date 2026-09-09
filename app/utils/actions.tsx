@@ -99,5 +99,3 @@ export async function getCryptoBalance() {
     .then((res) => console.log(res))
     .catch((err) => console.error(err))
 }
-//const a = getCryptoBalance()
-//console.log("Crypto balance:", a)
