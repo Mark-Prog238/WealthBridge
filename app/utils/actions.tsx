@@ -67,7 +67,7 @@ export async function fetchUserData() {
   if (error) {
     console.error("Error fetching user data:", error.message)
   }
-  console.log("Fetched user data:", user)
+  //console.log("Fetched user data:", user)
   return user
 }
 
