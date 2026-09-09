@@ -26,21 +26,6 @@ export async function ibkrAccountStatement(url: string) {
   }
 }
 
-// add usage for this script it gets users wealth on IBKR
-export async function refreshIBKRholdings() {
-  try {
-    const auth_code = await ibkrFlexQueryAuth(
-      `${ibkr_base_url}/SendRequest?t=${ibkr_token}&q=${query_id}&v=3`
-    )
-    const data = await ibkrAccountStatement(
-      `${ibkr_base_url}/GetStatement?t=${ibkr_token}&q=${auth_code}&v=3`
-    )
-    await upsertIBKRholdings(data)
-  } catch (err) {
-    throw err
-  }
-}
-
 // To save a new integration from your frontend UI
 export async function saveIbkrConnection(
   name: string,
@@ -106,4 +91,25 @@ export async function upsertIBKRholdings(parsedData: any) {
   } else {
     console.log("Successfully inserted/updated holdings!")
   }
+}
+
+export async function getTotalIBKRworth() {
+  const cookieStore = await cookies()
+  const supabase = await createClient(cookieStore)
+
+  const { data: assets, error } = await supabase
+    .from("ibkr_holdings")
+    .select("base_currency_value")
+
+  if (error || !assets) {
+    console.error("Failed to fetch assets:", error)
+    return 0
+  }
+
+  const total = assets.reduce((sum, item) => {
+    return sum + Number(item.base_currency_value)
+  }, 0)
+
+  console.log(`Total IBKR Worth: €${total.toFixed(2)}`)
+  return total
 }
