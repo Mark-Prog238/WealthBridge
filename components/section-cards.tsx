@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { getTotalIBKRworth } from "@/app/utils/ibkrFunctions"
+import { getTotalIBKRworth } from "@/app/utils/queries"
 import { TrendingUpIcon, TrendingDownIcon } from "lucide-react"
 
 export async function SectionCards() {

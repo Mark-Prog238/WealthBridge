@@ -2,7 +2,7 @@
 
 import { logout } from "@/app/utils/actions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { totalCryptoValue } from "@/app/utils/cryptoFunctions"
+import { totalCryptoValue } from "@/app/utils/actions"
 import { refreshIBKRholdings } from "@/app/utils/actions"
 import {
   DropdownMenu,

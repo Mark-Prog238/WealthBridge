@@ -1,5 +1,4 @@
 import { XMLParser } from "fast-xml-parser"
-import { stat } from "fs"
 
 export async function parseIBKRaccountStatement(res: any) {
   const xml = await res.text()
@@ -30,6 +29,7 @@ export async function parseIBKRaccountStatement(res: any) {
     positions: formatedPositions,
   }
 }
+
 export async function parseIBKRflexQueryAuth(res: any) {
   const xml = await res.text()
   const parsner = new XMLParser()
