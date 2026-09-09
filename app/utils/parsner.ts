@@ -1,4 +1,5 @@
 import { XMLParser } from "fast-xml-parser"
+import { stat } from "fs"
 
 export async function parseIBKRaccountStatement(res: any) {
   const xml = await res.text()
@@ -10,7 +11,7 @@ export async function parseIBKRaccountStatement(res: any) {
   const jsonObj = parsner.parse(xml)
   const statement = jsonObj.FlexQueryResponse.FlexStatements.FlexStatement
   const cashBalance = statement.CashReport.CashReportCurrency.endingSettledCash
-
+  const ibkr_account_id = statement.accountId
   let rawPositions = statement.OpenPositions.OpenPosition
   if (!Array.isArray(rawPositions)) {
     rawPositions = [rawPositions]
@@ -24,6 +25,7 @@ export async function parseIBKRaccountStatement(res: any) {
   }))
 
   return {
+    ibkr_account_id: ibkr_account_id,
     cash: cashBalance,
     positions: formatedPositions,
   }

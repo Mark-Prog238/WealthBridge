@@ -3,7 +3,7 @@
 import { logout } from "@/app/utils/actions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { totalCryptoValue } from "@/app/utils/cryptoFunctions"
-import { ibkrFlexQuery } from "@/app/utils/ibkrFunctions"
+import { refreshIBKRholdings } from "@/app/utils/ibkrFunctions"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -87,7 +87,7 @@ export function NavUser({
                 <CircleUserRoundIcon />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => ibkrFlexQuery()}>
+              <DropdownMenuItem onClick={() => refreshIBKRholdings()}>
                 <CreditCardIcon />
                 Billing
               </DropdownMenuItem>
