@@ -3,8 +3,9 @@
 import { createClient } from "@/app/utils/supabase/server"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
-import { parseIBKRflexQueryAuth, parseIBKRaccountStatement } from "./parsers"
+import { parseIBKRflexQueryAuth, parseDashboardFinancials } from "./parsers"
 import { getUser } from "./queries"
+import { env } from "process"
 const query_id = process.env.IBKR_FLEX_QUERY_ID
 const ibkr_token = process.env.IBKR_TEST_TOKEN
 const ETHER_SCAN_API_KEY = process.env.ETHER_SCAN_API_KEY
@@ -82,7 +83,7 @@ export async function ibkrFlexQueryAuth(url: string) {
 
 export async function ibkrAccountStatement(url: string) {
   try {
-    const res = await parseIBKRaccountStatement(await fetch(url))
+    const res = await parseDashboardFinancials(await fetch(url))
     return res
   } catch (err) {
     throw err
@@ -107,65 +108,43 @@ export async function saveIbkrConnection(
   return data
 }
 
-export async function fetchIbkrData(mappingId: string) {
+export async function fetchUserIBKRtoken() {
   const cookieStore = await cookies()
   const supabase = await createClient(cookieStore)
-
-  const { data: token, error } = await supabase.rpc("get_ibkr_token", {
-    p_mapping_id: mappingId,
-  })
-
-  if (error || !token) return null
-
-  console.log("Successfully retrieved decrypted token.")
-  return token
-}
-
-export async function upsertIBKRholdings(parsedData: any) {
-  const cookieStore = await cookies()
-  const supabase = await createClient(cookieStore)
-
-  const upsert_payload = [
-    {
-      ibkr_account_id: parsedData.ibkr_account_id,
-      asset_type: "cash",
-      ticker: "EUR",
-      amount: parsedData.cash,
-      base_currency_value: parsedData.cash,
-    },
-    ...parsedData.positions.map((pos: any) => ({
-      ibkr_account_id: parsedData.ibkr_account_id,
-      asset_type: "stock",
-      ticker: pos.symbol,
-      amount: pos.quantity,
-      base_currency_value: pos.valueInBase,
-    })),
-  ]
-
   const { data, error } = await supabase
-    .from("ibkr_holdings")
-    .upsert(upsert_payload, { onConflict: "user_id, ibkr_account_id, ticker" })
-  if (error) {
-    console.log("Failed to sync holdings:", error)
-  } else {
-    console.log("Successfully inserted/updated holdings!")
+    .from("ibkr_tokens")
+    .select("ibkr_token, query_id")
+    .single()
+
+  const debug = true
+  if (debug) {
+    return {
+      ibkr_token: ibkr_token,
+      query_id: query_id,
+    }
+  }
+
+  return {
+    ibkr_token: data?.ibkr_token,
+    query_id: data?.query_id,
   }
 }
 
-// add usage for this script it gets users wealth on IBKR
+// i will use this so the data is inserted into the ui i think this is better rather than updating the db every 5s
 export async function refreshIBKRholdings() {
   try {
-    const auth_code = await ibkrFlexQueryAuth(
-      `${ibkr_base_url}/SendRequest?t=${ibkr_token}&q=${query_id}&v=3`
-    )
-    const data = await ibkrAccountStatement(
-      `${ibkr_base_url}/GetStatement?t=${ibkr_token}&q=${auth_code}&v=3`
-    )
-    await upsertIBKRholdings(data)
+    const ibkrData = await fetchUserIBKRtoken()
+    const auth_code_url = `${ibkr_base_url}/SendRequest?t=${ibkrData?.ibkr_token}&q=${ibkrData?.query_id}&v=3`
+    const auth_code = await ibkrFlexQueryAuth(auth_code_url)
+
+    const data_url = `${ibkr_base_url}/GetStatement?t=${ibkrData?.ibkr_token}&q=${auth_code}&v=3`
+    const values = await ibkrAccountStatement(data_url)
+    return values
   } catch (err) {
     throw err
   }
 }
+
 // --- CRYPTO ACTIONS ---
 
 export async function totalCryptoValue() {

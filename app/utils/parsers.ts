@@ -1,6 +1,7 @@
 import { XMLParser } from "fast-xml-parser"
+import { stat } from "fs"
 
-export async function parseIBKRaccountStatement(res: any) {
+export async function parseDashboardFinancials(res: any) {
   const xml = await res.text()
   const parsner = new XMLParser({
     ignoreAttributes: false,
@@ -9,24 +10,13 @@ export async function parseIBKRaccountStatement(res: any) {
   })
   const jsonObj = parsner.parse(xml)
   const statement = jsonObj.FlexQueryResponse.FlexStatements.FlexStatement
-  const cashBalance = statement.CashReport.CashReportCurrency.endingSettledCash
-  const ibkr_account_id = statement.accountId
-  let rawPositions = statement.OpenPositions.OpenPosition
-  if (!Array.isArray(rawPositions)) {
-    rawPositions = [rawPositions]
-  }
-
-  const formatedPositions = rawPositions.map((pos: any) => ({
-    symbol: pos.symbol,
-    quantity: pos.position,
-    value: pos.positionValue,
-    valueInBase: pos.positionValueInBase,
-  }))
-
+  const baseCur = statement.AccountInformation.currency
+  const totalVal =
+    statement.EquitySummaryInBase.EquitySummaryByReportDateInBase.total
+  console.log(`baseCurrency: ${baseCur}   && totalValue: ${totalVal}`)
   return {
-    ibkr_account_id: ibkr_account_id,
-    cash: cashBalance,
-    positions: formatedPositions,
+    baseCurrency: baseCur,
+    totalValue: totalVal,
   }
 }
 

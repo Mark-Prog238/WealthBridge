@@ -7,20 +7,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { getTotalIBKRworth } from "@/app/utils/queries"
+import { refreshIBKRholdings } from "@/app/utils/actions"
 import { totalCryptoValue } from "@/app/utils/actions"
 import { TrendingUpIcon, TrendingDownIcon } from "lucide-react"
 
 export async function SectionCards() {
-  const totalWorth = await getTotalIBKRworth()
+  const data = await refreshIBKRholdings()
+  const ibkrValueInBase = data?.totalValue || "Loading"
+  const ibkrBaseCurrency = data?.baseCurrency || ""
   const totalEth = await totalCryptoValue()
   return (
     <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>IBKR Total</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {totalWorth.toFixed(2)} EUR
+          <CardTitle className="text-xl font-semibold tabular-nums @[250px]/card:text-2xl">
+            {ibkrValueInBase.toFixed(2)} {ibkrBaseCurrency}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
