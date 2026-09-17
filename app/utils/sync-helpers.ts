@@ -1,103 +1,11 @@
-"use server"
-
-import { createClient } from "@/app/utils/supabase/server"
-import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
-import { parseIBKRflexQueryAuth, parseDashboardFinancials } from "./parsers"
-import { getSessionUser, insertSecretQuery } from "./queries"
+import { createClient } from "@/app/utils/supabase/server"
+import { ibkrFlexQueryAuth } from "./actions"
+import { parseDashboardFinancials } from "./parsers"
+import { getSessionUser } from "./queries"
 const ibkr_base_url = `https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService`
 
-// --- AUTHENTICATION ACTIONS ---
-
-export async function login(formData: FormData) {
-  const email = formData.get("email") as string
-  const password = formData.get("password") as string
-  const cookieStore = await cookies()
-  const supabase = await createClient(cookieStore)
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-
-  if (error) {
-    redirect(`/login?error=${error.message}`)
-  }
-
-  redirect("/auth/dashboard")
-}
-
-export async function register(formData: FormData) {
-  const email = formData.get("email") as string
-  const password = formData.get("password") as string
-  const fname = formData.get("fname") as string
-  const lname = formData.get("lname") as string
-  const cookieStore = await cookies()
-  const supabase = await createClient(cookieStore)
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        first_name: fname,
-        last_name: lname,
-      },
-    },
-  })
-
-  if (error) {
-    if (error.message.includes("already registered")) {
-      console.log("User already exists redirecting to login page")
-      redirect("/login")
-    }
-    redirect(`/register?error=${error.message}`)
-  }
-
-  redirect("/login")
-}
-
-export async function logout() {
-  console.log("Logging out user...")
-  const cookieStore = await cookies()
-  const supabase = await createClient(cookieStore)
-
-  await supabase.auth.signOut()
-  redirect("/login")
-}
-
-// --- IBKR ACTIONS ---
-
-export async function ibkrFlexQueryAuth(url: string) {
-  try {
-    const res = await parseIBKRflexQueryAuth(await fetch(url))
-    return res
-  } catch (err) {
-    throw err
-  }
-}
-
-export async function saveIbkrConnection(
-  name: string,
-  queryId: string,
-  token: string
-) {
-  const cookieStore = await cookies()
-  const supabase = await createClient(cookieStore)
-
-  const { data, error } = await supabase.rpc("add_ibkr_query", {
-    p_query_name: name,
-    p_ibkr_query_id: queryId,
-    p_token: token,
-  })
-
-  if (error) console.error(error)
-  return data
-}
-
-// actions.ts
-
-export async function refreshIBKRholdings() {
+export async function refreshIBKRholdingsForUser() {
   const cookieStore = await cookies()
   const supabase = await createClient(cookieStore)
 
@@ -152,7 +60,7 @@ export async function refreshIBKRholdings() {
 }
 
 // --- CRYPTO ACTIONS ---
-export async function totalCryptoValue() {
+export async function totalCryptoValueForUser() {
   const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
   const user = await getSessionUser()
@@ -220,60 +128,3 @@ export async function totalCryptoValue() {
     return 0
   }
 }
-export async function getCryptoBalance() {
-  const options = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: 1,
-      method: "eth_getBalance",
-      params: ["0xfe3b557e8fb62b89f4916b721be55ceb828dbd73", "latest"],
-    }),
-  }
-
-  fetch("https://abstract-mainnet.g.alchemy.com/v2/docs-demo", options)
-    .then((res) => res.json())
-    .then((res) => console.log(res))
-    .catch((err) => console.error(err))
-}
-
-export async function insertSecret(
-  token: string,
-  queryType: string,
-  queryId: string
-) {
-  const { data: secret_id, error } = await insertSecretQuery(
-    token,
-    queryType,
-    queryId
-  )
-  console.log(`secret created with id:: ${secret_id}`)
-  if (error) {
-    console.error("Failed to store secret in Vault:", error.message)
-    return { success: false, error: error.message }
-  }
-
-  return { success: true, secret_id: secret_id }
-}
-
-export async function refreshDashboardServer() {
-  const [ibkrDataResult, totalEthResult] = await Promise.allSettled([
-    refreshIBKRholdings(),
-    totalCryptoValue(),
-  ])
-  const ibkrData =
-    ibkrDataResult.status === "fulfilled" ? ibkrDataResult.value : null
-  const totalEth =
-    totalEthResult.status === "fulfilled" ? totalEthResult.value : 0
-
-  const ibkrValueInBase = ibkrData?.totalValue ?? null // null pomeni, da podatkov ni/je napaka
-  const ibkrBaseCurrency = ibkrData?.baseCurrency ?? "USD"
-  return {
-    ibkrValueInBase: ibkrValueInBase,
-    ibkrBaseCurrency: ibkrBaseCurrency,
-    totalEth: totalEth,
-  }
-}
-
-export async function fetchAllAccounts() {}

@@ -3,6 +3,7 @@
 import { useTransition, useState } from "react"
 import { insertSecret } from "@/app/utils/actions"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 import {
   Select,
   SelectTrigger,
@@ -22,7 +23,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
-import { M_PLUS_1 } from "next/font/google"
 
 const items = [
   {
@@ -58,34 +58,43 @@ export function IbkrConnectDialog({
   const [selectedValue, setSelectedValue] = useState<string>("")
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const selectedItem = items.find((item) => item.label === selectedValue)
+  const router = useRouter()
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setErrorMsg(null)
-
+    const queryType = selectedItem?.type
     const formData = new FormData(event.currentTarget)
-    const queryId = formData.get("queryId") as string
-    const token = formData.get("token") as string
-
-    if (!queryId || !token) {
+    console.log(queryType)
+    if (queryType === "ibkr") {
+      const queryId = formData.get("field1") as string
+      const token = formData.get("field2") as string
+      startTransition(async () => {
+        console.log(`token: ${token}, type:${queryType}, queryId:${queryId}`)
+        const result = await insertSecret(token, queryType, queryId)
+        if (result.success) {
+          setOpen(false) // Use the parent's function to close it
+        } else {
+          setErrorMsg(result.error || "Failed to save credentials.")
+        }
+      })
+    }
+    if (queryType === "bank") {
+    }
+    if (queryType === "blockchain") {
+    }
+    //  console.log(`field1: ${field1}.  field2: ${field2},   field3: ${field3}`)
+    /*     if (!queryId || !token) {
       setErrorMsg("Both Query ID and Token are required.")
       return
-    }
-
-    startTransition(async () => {
-      const result = await insertSecret(token, "queryType", queryId)
-      if (result.success) {
-        setOpen(false) // Use the parent's function to close it
-      } else {
-        setErrorMsg(result.error || "Failed to save credentials.")
-      }
-    })
+    } */
+    router.refresh()
   }
 
   return (
     // 2. The Dialog listens to the parent's variables
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Connect a new account</DialogTitle>
           <DialogDescription>
@@ -102,7 +111,10 @@ export function IbkrConnectDialog({
 
           {/* toogle what to add  */}
           <div className="space-y-2">
-            <Select value={selectedValue} onValueChange={setSelectedValue}>
+            <Select
+              value={selectedValue}
+              onValueChange={(val) => setSelectedValue(val || "")}
+            >
               <SelectTrigger className="w-full max-w-48">
                 {/* The placeholder replaces your null item */}
                 <SelectValue placeholder="Select type of account" />
@@ -125,7 +137,7 @@ export function IbkrConnectDialog({
                   <Input
                     id="wallet_address"
                     type="password"
-                    name="wallet_address"
+                    name="field1"
                     placeholder="sk-..."
                     disabled={isPending}
                   />
@@ -135,7 +147,7 @@ export function IbkrConnectDialog({
                   <Input
                     id="wallet_title"
                     type="text"
-                    name="wallet_address"
+                    name="field2"
                     placeholder="Wallet 1"
                     disabled={isPending}
                   />
@@ -145,7 +157,7 @@ export function IbkrConnectDialog({
                   <Input
                     id="wallet_description"
                     type="text"
-                    name="wallet_description"
+                    name="field3"
                     placeholder="My main crypto wallet"
                     disabled={isPending}
                   />
@@ -159,17 +171,17 @@ export function IbkrConnectDialog({
                   <Input
                     id="query_id"
                     type="text"
-                    name="query_id"
+                    name="field1"
                     placeholder="128193282"
                     disabled={isPending}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ibkr_query_secret">Flex Query ID</Label>
+                  <Label htmlFor="ibkr_query_secret">IBKR FLEX SECRET</Label>
                   <Input
                     id="ibkr_query_secret"
                     type="password"
-                    name="ibkr_query_secret"
+                    name="field2"
                     placeholder="***************"
                     disabled={isPending}
                   />
@@ -182,8 +194,18 @@ export function IbkrConnectDialog({
                   <Input
                     id="bank_name"
                     type="text"
-                    name="bank_name"
+                    name="field1"
                     placeholder="NLB d.d."
+                    disabled={isPending}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cash">Bank Account IBAN</Label>
+                  <Input
+                    id="bank_iban"
+                    type="text"
+                    name="field2"
+                    placeholder="IBAN"
                     disabled={isPending}
                   />
                 </div>
@@ -194,7 +216,7 @@ export function IbkrConnectDialog({
                   <Input
                     id="bank_desc"
                     type="text"
-                    name="bank_desc"
+                    name="field3"
                     placeholder="Varčevalni račun"
                     disabled={isPending}
                   />

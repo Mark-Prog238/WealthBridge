@@ -5681,7 +5681,7 @@ export async function getUser() {
   }
 }
 
-export async function fetchUserData() {
+export async function getUser() {
   const cookieStore = await cookies()
   const supabase = await createClient(cookieStore)
   const {
@@ -6531,7 +6531,7 @@ import { fetchUserData } from "@/app/utils/queries"
 import data from "./data.json"
 
 export default async function Page() {
-  const user = await fetchUserData()
+  const user = await getUser()
   return (
     <SidebarProvider
       style={

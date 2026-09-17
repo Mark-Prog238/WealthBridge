@@ -1,23 +1,12 @@
+"use server"
 import { createClient } from "@/app/utils/supabase/server"
 import { cookies } from "next/headers"
+import { create } from "node:domain"
 import { StringDecoder } from "node:string_decoder"
 
 export async function getUser() {
   const cookieStore = await cookies()
-  const supabase = await createClient(cookieStore)
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    return user
-  } catch (err) {
-    console.log(`error line 55:    ${err}`)
-  }
-}
-
-export async function fetchUserData() {
-  const cookieStore = await cookies()
-  const supabase = await createClient(cookieStore)
+  const supabase = createClient(cookieStore)
   const {
     data: { user },
     error,
@@ -26,6 +15,15 @@ export async function fetchUserData() {
     console.error("Error fetching user data:", error.message)
   }
   return user
+}
+
+export async function getSessionUser() {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  return session?.user
 }
 
 export async function insertSecretQuery(

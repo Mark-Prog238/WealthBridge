@@ -7,22 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { refreshIBKRholdings } from "@/app/utils/actions"
-import { totalCryptoValue } from "@/app/utils/actions"
 import { TrendingUpIcon, TrendingDownIcon } from "lucide-react"
+import { refreshDashboardServer } from "@/app/utils/actions"
 
 export async function SectionCards() {
-  const [ibkrDataResult, totalEthResult] = await Promise.allSettled([
-    refreshIBKRholdings(),
-    totalCryptoValue(),
-  ])
-  const ibkrData =
-    ibkrDataResult.status === "fulfilled" ? ibkrDataResult.value : null
-  const totalEth =
-    totalEthResult.status === "fulfilled" ? totalEthResult.value : 0
+  const { ibkrValueInBase, ibkrBaseCurrency, totalEth } =
+    await refreshDashboardServer()
 
-  const ibkrValueInBase = ibkrData?.totalValue ?? null // null pomeni, da podatkov ni/je napaka
-  const ibkrBaseCurrency = ibkrData?.baseCurrency ?? "USD"
   return (
     <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
       <Card className="@container/card">

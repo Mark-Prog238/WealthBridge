@@ -1,10 +1,4 @@
 "use client"
-
-import * as React from "react"
-
-import { NavDocuments } from "@/components/nav-documents"
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import { useState } from "react"
 import { Config } from "@/app/config"
@@ -13,10 +7,12 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarGroupContent,
 } from "@/components/ui/sidebar"
 import {
   LayoutDashboardIcon,
@@ -35,7 +31,7 @@ import {
   PlusCircleIcon,
   CommandIcon,
 } from "lucide-react"
-
+import { usePathname } from "next/navigation"
 const data = {
   user: {
     name: "shadcn",
@@ -177,6 +173,7 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & { userdata?: any }) {
   const [isIbkrOpen, setIsIbkrOpen] = useState(false)
+  const pathname = usePathname()
   return (
     <>
       <Sidebar collapsible="offcanvas" {...props}>
@@ -185,7 +182,7 @@ export function AppSidebar({
             <SidebarMenuItem>
               <SidebarMenuButton
                 className="data-[slot=sidebar-menu-button]:p-1.5!"
-                render={<a href="#" />}
+                render={<a href="/auth/dashboard" />}
               >
                 <CommandIcon className="size-5!" />
                 <span className="text-base font-semibold">
@@ -196,15 +193,36 @@ export function AppSidebar({
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          {/* <NavMain items={data.navMain} /> 
-              <NavDocuments items={data.documents} /> 
-              <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={() => setIsIbkrOpen(true)}>
-              <PlusCircleIcon />
-              <span>Connect IBKR</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => setIsIbkrOpen(true)}>
+                    <PlusCircleIcon />
+                    <span>Connect New Account</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={pathname === "/auth/dashboard"}
+                    render={<a href="/auth/dashboard" />}
+                  >
+                    <LayoutDashboardIcon />
+                    <span>Dashboard</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={pathname === "/auth/accounts"}
+                    render={<a href="/auth/accounts" />}
+                  >
+                    <UsersIcon />
+                    <span>Accounts</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
           <NavUser
