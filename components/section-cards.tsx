@@ -12,24 +12,35 @@ import { totalCryptoValue } from "@/app/utils/actions"
 import { TrendingUpIcon, TrendingDownIcon } from "lucide-react"
 
 export async function SectionCards() {
-  const data = await refreshIBKRholdings()
-  const ibkrValueInBase = data?.totalValue || "Loading"
-  const ibkrBaseCurrency = data?.baseCurrency || ""
-  const totalEth = await totalCryptoValue()
+  const [ibkrDataResult, totalEthResult] = await Promise.allSettled([
+    refreshIBKRholdings(),
+    totalCryptoValue(),
+  ])
+  const ibkrData =
+    ibkrDataResult.status === "fulfilled" ? ibkrDataResult.value : null
+  const totalEth =
+    totalEthResult.status === "fulfilled" ? totalEthResult.value : 0
+
+  const ibkrValueInBase = ibkrData?.totalValue ?? null // null pomeni, da podatkov ni/je napaka
+  const ibkrBaseCurrency = ibkrData?.baseCurrency ?? "USD"
   return (
     <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>IBKR Total</CardDescription>
           <CardTitle className="text-xl font-semibold tabular-nums @[250px]/card:text-2xl">
-            {ibkrValueInBase.toFixed(2)} {ibkrBaseCurrency}
+            {ibkrValueInBase === null ? (
+              <span>Podatki niso na voljo</span>
+            ) : (
+              `${ibkrValueInBase.toFixed(2)} ${ibkrBaseCurrency}`
+            )}
           </CardTitle>
-          <CardAction>
+          {/*           <CardAction>
             <Badge variant="outline">
               <TrendingUpIcon />
               +12.5%
             </Badge>
-          </CardAction>
+          </CardAction> */}
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">

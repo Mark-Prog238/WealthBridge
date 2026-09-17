@@ -4,8 +4,10 @@ import { createClient } from "@/app/utils/supabase/server"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { parseIBKRflexQueryAuth, parseDashboardFinancials } from "./parsers"
-import { getUser } from "./queries"
+import { getUser, insertSecretQuery } from "./queries"
 import { env } from "process"
+import { string, success } from "zod"
+import { create } from "domain"
 const query_id = process.env.IBKR_FLEX_QUERY_ID
 const ibkr_token = process.env.IBKR_TEST_TOKEN
 const ETHER_SCAN_API_KEY = process.env.ETHER_SCAN_API_KEY
@@ -108,36 +110,28 @@ export async function saveIbkrConnection(
   return data
 }
 
-export async function fetchUserIBKRtoken() {
-  const cookieStore = await cookies()
-  const supabase = await createClient(cookieStore)
-  const { data, error } = await supabase
-    .from("ibkr_tokens")
-    .select("ibkr_token, query_id")
-    .single()
-
-  const debug = true
-  if (debug) {
-    return {
-      ibkr_token: ibkr_token,
-      query_id: query_id,
-    }
-  }
-
-  return {
-    ibkr_token: data?.ibkr_token,
-    query_id: data?.query_id,
-  }
-}
-
 // i will use this so the data is inserted into the ui i think this is better rather than updating the db every 5s
 export async function refreshIBKRholdings() {
+  const cookieStore = await cookies()
+  const supabase = await createClient(cookieStore)
+  const { data: mappingData, error: mappingError } = await supabase
+    .from("user_ibkr_queries")
+    .select("query_id, secret_id")
+    .eq("query_type", "IBKR_DASHBOARD_QUERY")
+    .single()
+  const { data: ibkrSecret, error: tokenError } = await supabase.rpc(
+    "read_secret",
+    {
+      p_secret_id: mappingData?.secret_id,
+    }
+  )
+
+  console.log(`ibkrSecret: ${ibkrSecret} query_id: ${mappingData?.query_id}`)
   try {
-    const ibkrData = await fetchUserIBKRtoken()
-    const auth_code_url = `${ibkr_base_url}/SendRequest?t=${ibkrData?.ibkr_token}&q=${ibkrData?.query_id}&v=3`
+    const auth_code_url = `${ibkr_base_url}/SendRequest?t=${ibkrSecret}&q=${mappingData?.query_id}&v=3`
     const auth_code = await ibkrFlexQueryAuth(auth_code_url)
 
-    const data_url = `${ibkr_base_url}/GetStatement?t=${ibkrData?.ibkr_token}&q=${auth_code}&v=3`
+    const data_url = `${ibkr_base_url}/GetStatement?t=${ibkrSecret}&q=${auth_code}&v=3`
     const values = await ibkrAccountStatement(data_url)
     return values
   } catch (err) {
@@ -213,4 +207,23 @@ export async function getCryptoBalance() {
     .then((res) => res.json())
     .then((res) => console.log(res))
     .catch((err) => console.error(err))
+}
+
+export async function insertSecret(
+  token: string,
+  queryType: string,
+  queryId: string
+) {
+  const { data: secret_id, error } = await insertSecretQuery(
+    token,
+    queryType,
+    queryId
+  )
+  console.log(`secret created with id:: ${secret_id}`)
+  if (error) {
+    console.error("Failed to store secret in Vault:", error.message)
+    return { success: false, error: error.message }
+  }
+
+  return { success: true, secret_id: secret_id }
 }

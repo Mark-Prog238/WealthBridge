@@ -4,6 +4,7 @@ import { logout } from "@/app/utils/actions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { totalCryptoValue } from "@/app/utils/actions"
 import { refreshIBKRholdings } from "@/app/utils/actions"
+import { IbkrConnectDialog } from "@/components/ibkr-connect-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,7 @@ import {
   BellIcon,
   LogOutIcon,
 } from "lucide-react"
+import { useState } from "react"
 
 export function NavUser({
   user,
@@ -38,8 +40,14 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const wallet = "0x55b20946eaFCBbd5cC183561765df9a0D19bc872"
+  // debug then we will create ui element for prompting insertion
+  const [isIbkrDialogOpen, setIsIbkrDialogOpen] = useState(false)
   return (
     <SidebarMenu>
+      <IbkrConnectDialog
+        open={isIbkrDialogOpen}
+        setOpen={setIsIbkrDialogOpen}
+      />
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -91,7 +99,7 @@ export function NavUser({
                 <CreditCardIcon />
                 Billing
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsIbkrDialogOpen(true)}>
                 <BellIcon />
                 Notifications
               </DropdownMenuItem>
