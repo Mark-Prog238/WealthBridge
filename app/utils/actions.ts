@@ -4,7 +4,7 @@ import { createClient } from "@/app/utils/supabase/server"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { parseIBKRflexQueryAuth, parseDashboardFinancials } from "./parsers"
-import { getSessionUser, insertSecretQuery } from "./queries"
+import { getUser, insertSecretQuery } from "./queries"
 const ibkr_base_url = `https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService`
 
 // --- AUTHENTICATION ACTIONS ---
@@ -127,8 +127,6 @@ export async function refreshIBKRholdings() {
     return null
   }
 
-  console.log(`ibkrSecret: ${ibkrSecret} query_id: ${mappingData.query_id}`)
-
   try {
     // 4. Hit the IBKR API
     const auth_code_url = `${ibkr_base_url}/SendRequest?t=${ibkrSecret}&q=${mappingData.query_id}&v=3`
@@ -155,7 +153,7 @@ export async function refreshIBKRholdings() {
 export async function totalCryptoValue() {
   const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
-  const user = await getSessionUser()
+  const user = await getUser()
 
   if (!user) {
     console.log("User not logged in")
@@ -248,7 +246,6 @@ export async function insertSecret(
     queryType,
     queryId
   )
-  console.log(`secret created with id:: ${secret_id}`)
   if (error) {
     console.error("Failed to store secret in Vault:", error.message)
     return { success: false, error: error.message }

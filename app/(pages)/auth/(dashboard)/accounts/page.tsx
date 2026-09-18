@@ -1,15 +1,10 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { getSessionUser } from "@/app/utils/queries"
+import { getUser } from "@/app/utils/queries"
 import AccountsPage from "@/components/accounts-table"
-import data from "./data.json"
-
 export default async function Page() {
-  const user = await getSessionUser()
+  const user = await getUser()
   return (
     <SidebarProvider
       style={

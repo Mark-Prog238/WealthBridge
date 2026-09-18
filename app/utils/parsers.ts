@@ -13,7 +13,6 @@ export async function parseDashboardFinancials(res: any) {
   const baseCur = statement.AccountInformation.currency
   const totalVal =
     statement.EquitySummaryInBase.EquitySummaryByReportDateInBase.total
-  console.log(`baseCurrency: ${baseCur}   && totalValue: ${totalVal}`)
   return {
     baseCurrency: baseCur,
     totalValue: totalVal,

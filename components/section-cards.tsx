@@ -8,11 +8,10 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { TrendingUpIcon, TrendingDownIcon } from "lucide-react"
-import { refreshDashboardServer } from "@/app/utils/actions"
+import { fetchUserHoldingsCache } from "@/app/utils/queries"
 
 export async function SectionCards() {
-  const { ibkrValueInBase, ibkrBaseCurrency, totalEth } =
-    await refreshDashboardServer()
+  const { ibkrRow, ethRow } = await fetchUserHoldingsCache()
 
   return (
     <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
@@ -20,10 +19,10 @@ export async function SectionCards() {
         <CardHeader>
           <CardDescription>IBKR Total</CardDescription>
           <CardTitle className="text-xl font-semibold tabular-nums @[250px]/card:text-2xl">
-            {ibkrValueInBase === null ? (
+            {ibkrRow?.total_value === null ? (
               <span>Podatki niso na voljo</span>
             ) : (
-              `${ibkrValueInBase.toFixed(2)} ${ibkrBaseCurrency}`
+              `${ibkrRow?.total_value.toFixed(2)} ${ibkrRow?.base_currency}`
             )}
           </CardTitle>
           {/*           <CardAction>
@@ -46,7 +45,7 @@ export async function SectionCards() {
         <CardHeader>
           <CardDescription>Total ETH</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {totalEth?.toFixed(6)} ETH
+            {ethRow?.total_value?.toFixed(6)} ETH
           </CardTitle>
           {/*           <CardAction>
             <Badge variant="outline">

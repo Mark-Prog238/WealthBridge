@@ -65,12 +65,10 @@ export function IbkrConnectDialog({
     setErrorMsg(null)
     const queryType = selectedItem?.type
     const formData = new FormData(event.currentTarget)
-    console.log(queryType)
     if (queryType === "ibkr") {
       const queryId = formData.get("field1") as string
       const token = formData.get("field2") as string
       startTransition(async () => {
-        console.log(`token: ${token}, type:${queryType}, queryId:${queryId}`)
         const result = await insertSecret(token, queryType, queryId)
         if (result.success) {
           setOpen(false) // Use the parent's function to close it

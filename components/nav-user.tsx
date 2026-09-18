@@ -3,7 +3,7 @@
 import { logout } from "@/app/utils/actions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { totalCryptoValue } from "@/app/utils/actions"
-import { refreshIBKRholdings } from "@/app/utils/actions"
+import { fetchUserHoldingsCache } from "@/app/utils/queries"
 import { IbkrConnectDialog } from "@/components/ibkr-connect-dialog"
 import {
   DropdownMenu,
@@ -95,7 +95,7 @@ export function NavUser({
                 <CircleUserRoundIcon />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => refreshIBKRholdings()}>
+              <DropdownMenuItem onClick={() => fetchUserHoldingsCache()}>
                 <CreditCardIcon />
                 Billing
               </DropdownMenuItem>
